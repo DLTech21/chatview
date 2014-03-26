@@ -129,10 +129,10 @@
 												 name:UIKeyboardWillHideNotification
                                                object:nil];
     
-    [self.messageInputView.textView addObserver:self
-                                     forKeyPath:@"contentSize"
-                                        options:NSKeyValueObservingOptionNew
-                                        context:nil];
+//    [self.messageInputView.textView addObserver:self
+//                                     forKeyPath:@"contentSize"
+//                                        options:NSKeyValueObservingOptionNew
+//                                        context:nil];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
@@ -145,7 +145,7 @@
     [[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillShowNotification object:nil];
 	[[NSNotificationCenter defaultCenter] removeObserver:self name:UIKeyboardWillHideNotification object:nil];
     
-    [self.messageInputView.textView removeObserver:self forKeyPath:@"contentSize"];
+//    [self.messageInputView.textView removeObserver:self forKeyPath:@"contentSize"];
 }
 
 - (void)didReceiveMemoryWarning
