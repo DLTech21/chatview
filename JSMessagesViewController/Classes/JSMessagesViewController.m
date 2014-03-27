@@ -15,6 +15,8 @@
 #import "JSMessagesViewController.h"
 #import "JSMessageTextView.h"
 #import "NSString+JSMessagesView.h"
+#import "MoreCell.h"
+#import "UIView+Utils.h"
 
 @interface JSMessagesViewController () <JSDismissiveTextViewDelegate>
 
@@ -131,7 +133,7 @@
     
 //    [self.messageInputView.textView addObserver:self
 //                                     forKeyPath:@"contentSize"
-//                                        options:NSKeyValueObservingOptionNew
+//                                        options:NSKeyValueObservingOptionOld
 //                                        context:nil];
 }
 
@@ -156,7 +158,6 @@
 
 - (void)dealloc
 {
-    NSLog(@"aaa");
     _delegate = nil;
     _dataSource = nil;
     _tableView = nil;
@@ -200,7 +201,7 @@
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView *)tableView
 {
-    return 1;
+    return 2;
 }
 
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
@@ -210,70 +211,92 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    JSBubbleMessageType type = [self.delegate messageTypeForRowAtIndexPath:indexPath];
-    
-    UIImageView *bubbleImageView = [self.delegate bubbleImageViewWithType:type
-                                                        forRowAtIndexPath:indexPath];
-    
-    id<JSMessageData> message = [self.dataSource messageForRowAtIndexPath:indexPath];
-    
-    UIImageView *avatar = [self.dataSource avatarImageViewForRowAtIndexPath:indexPath sender:[message sender]];
-    
-    BOOL displayTimestamp = YES;
-    if ([self.delegate respondsToSelector:@selector(shouldDisplayTimestampForRowAtIndexPath:)]) {
-        displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
+    if (indexPath.section == 0) {
+        MoreCell *cell = (MoreCell *)[tableView dequeueReusableCellWithIdentifier:@"MoreCell"];
+        if (cell == nil) {
+            cell  = [[MoreCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:@"MoreCell"];
+        }
+        [self.dataSource moreCell:cell];
+        return cell;
     }
-    
-    NSString *CellIdentifier = nil;
-    if ([self.delegate respondsToSelector:@selector(customCellIdentifierForRowAtIndexPath:)]) {
-        CellIdentifier = [self.delegate customCellIdentifierForRowAtIndexPath:indexPath];
+    else {
+        JSBubbleMessageType type = [self.delegate messageTypeForRowAtIndexPath:indexPath];
+        
+        UIImageView *bubbleImageView = [self.delegate bubbleImageViewWithType:type
+                                                            forRowAtIndexPath:indexPath];
+        
+        id<JSMessageData> message = [self.dataSource messageForRowAtIndexPath:indexPath];
+        
+        BOOL displayTimestamp = YES;
+        if ([self.delegate respondsToSelector:@selector(shouldDisplayTimestampForRowAtIndexPath:)]) {
+            displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
+        }
+        
+        NSString *CellIdentifier = nil;
+        if ([self.delegate respondsToSelector:@selector(customCellIdentifierForRowAtIndexPath:)]) {
+            CellIdentifier = [self.delegate customCellIdentifierForRowAtIndexPath:indexPath];
+        }
+        
+        if (!CellIdentifier) {
+            CellIdentifier = [NSString stringWithFormat:@"JSMessageCell_%d_%d_%d_%d", (int)type, displayTimestamp, YES, YES];
+        }
+        
+        JSBubbleMessageCell *cell = (JSBubbleMessageCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
+        
+        if (!cell) {
+            cell = [[JSBubbleMessageCell alloc] initWithBubbleType:type
+                                                   bubbleImageView:bubbleImageView
+                                                           message:message
+                                                 displaysTimestamp:displayTimestamp
+                                                         hasAvatar:YES
+                                                   reuseIdentifier:CellIdentifier];
+        }
+        
+        [cell setMessage:message];
+        [self.dataSource avatarImageForMessage:cell.avatarImageView avatarUrlForRowAtIndexPath:indexPath];
+        [cell setBackgroundColor:tableView.backgroundColor];
+        
+        if ([self.delegate respondsToSelector:@selector(configureCell:atIndexPath:)]) {
+            [self.delegate configureCell:cell atIndexPath:indexPath];
+        }
+        
+        if (type == JSBubbleMessageTypeOutgoing) {
+            CGSize size = [JSBubbleView neededSizeForText:[message text]];
+            cell.sendingIndicator.left = cell.contentView.width - size.width - kJSAvatarImageSize - 8 - cell.sendingIndicator.width-10;
+            cell.sendingIndicator.top = cell.bubbleView.height /2 + cell.bubbleView.top-5;
+        }
+        if ([self.dataSource displaySendingIndicatorForRowAtIndexPath:indexPath]) {
+            [cell.sendingIndicator startAnimating];
+        }
+        else {
+            [cell.sendingIndicator stopAnimating];
+        }
+        return cell;
     }
-
-    if (!CellIdentifier) {
-        CellIdentifier = [NSString stringWithFormat:@"JSMessageCell_%d_%d_%d_%d", (int)type, displayTimestamp, avatar != nil, [message sender] != nil];
-    }
-    
-    JSBubbleMessageCell *cell = (JSBubbleMessageCell *)[tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-    
-    if (!cell) {
-        cell = [[JSBubbleMessageCell alloc] initWithBubbleType:type
-                                               bubbleImageView:bubbleImageView
-                                                       message:message
-                                             displaysTimestamp:displayTimestamp
-                                                     hasAvatar:avatar != nil
-                                               reuseIdentifier:CellIdentifier];
-    }
-    
-    [cell setMessage:message];
-    [cell setAvatarImageView:avatar];
-    [cell setBackgroundColor:tableView.backgroundColor];
-	
-    if ([self.delegate respondsToSelector:@selector(configureCell:atIndexPath:)]) {
-        [self.delegate configureCell:cell atIndexPath:indexPath];
-    }
-    
-    return cell;
 }
 
 #pragma mark - Table view delegate
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    id<JSMessageData> message = [self.dataSource messageForRowAtIndexPath:indexPath];
-    UIImageView *avatar = [self.dataSource avatarImageViewForRowAtIndexPath:indexPath sender:[message sender]];
-    
-    BOOL displayTimestamp = YES;
-    if ([self.delegate respondsToSelector:@selector(shouldDisplayTimestampForRowAtIndexPath:)]) {
-        displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
+    if (indexPath.section == 0) {
+        return 40;
     }
-    
-    return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
-                                                             displaysAvatar:avatar != nil
-                                                          displaysTimestamp:displayTimestamp];
+    else {
+        id<JSMessageData> message = [self.dataSource messageForRowAtIndexPath:indexPath];
+        
+        BOOL displayTimestamp = YES;
+        if ([self.delegate respondsToSelector:@selector(shouldDisplayTimestampForRowAtIndexPath:)]) {
+            displayTimestamp = [self.delegate shouldDisplayTimestampForRowAtIndexPath:indexPath];
+        }
+        
+        return [JSBubbleMessageCell neededHeightForBubbleMessageCellWithMessage:message
+                                                                 displaysAvatar:YES
+                                                              displaysTimestamp:displayTimestamp];
+    }
 }
 
 #pragma mark - Messages view controller
-
 - (void)finishSend
 {
     [self.messageInputView.textView setText:nil];
@@ -293,10 +316,10 @@
 	if (![self shouldAllowScroll])
         return;
 	
-    NSInteger rows = [self.tableView numberOfRowsInSection:0];
+    NSInteger rows = [self.tableView numberOfRowsInSection:1];
     
     if (rows > 0) {
-        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:rows - 1 inSection:0]
+        [self.tableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:rows - 1 inSection:1]
                               atScrollPosition:UITableViewScrollPositionBottom
                                       animated:animated];
     }
@@ -370,6 +393,7 @@
 - (void)textViewDidChange:(UITextView *)textView
 {
     self.messageInputView.sendButton.enabled = ([[textView.text js_stringByTrimingWhitespace] length] > 0);
+    [self layoutAndAnimateMessageInputTextView:textView];
 }
 
 - (void)textViewDidEndEditing:(UITextView *)textView
@@ -382,9 +406,10 @@
 - (void)layoutAndAnimateMessageInputTextView:(UITextView *)textView
 {
     CGFloat maxHeight = [JSMessageInputView maxHeight];
-    
-    BOOL isShrinking = textView.contentSize.height < self.previousTextViewContentHeight;
-    CGFloat changeInHeight = textView.contentSize.height - self.previousTextViewContentHeight;
+    CGSize size = [textView sizeThatFits:CGSizeMake(textView.frame.size.width, maxHeight)];
+    CGFloat textViewContentHeight = size.height;
+    BOOL isShrinking = textViewContentHeight < self.previousTextViewContentHeight;
+    CGFloat changeInHeight = textViewContentHeight - self.previousTextViewContentHeight;
     
     if (!isShrinking && (self.previousTextViewContentHeight == maxHeight || textView.text.length == 0)) {
         changeInHeight = 0;
@@ -419,7 +444,7 @@
                          completion:^(BOOL finished) {
                          }];
         
-        self.previousTextViewContentHeight = MIN(textView.contentSize.height, maxHeight);
+        self.previousTextViewContentHeight = MIN(textViewContentHeight, maxHeight);
     }
     
     // Once we reached the max height, we have to consider the bottom offset for the text view.
@@ -430,7 +455,7 @@
         dispatch_after(popTime,
                        dispatch_get_main_queue(),
                        ^(void) {
-                           CGPoint bottomOffset = CGPointMake(0.0f, textView.contentSize.height - textView.bounds.size.height);
+                           CGPoint bottomOffset = CGPointMake(0.0f, textViewContentHeight - textView.bounds.size.height);
                            [textView setContentOffset:bottomOffset animated:YES];
                        });
     }

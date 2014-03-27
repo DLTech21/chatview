@@ -44,8 +44,8 @@ static NSDictionary *bubbleImageDictionary;
                                  @"bubble-classic-gray", @(JSBubbleImageViewStyleClassicGray),
                                  @"bubble-classic-blue", @(JSBubbleImageViewStyleClassicBlue),
                                  @"bubble-classic-green", @(JSBubbleImageViewStyleClassicGreen),
-                                 @"bubble-classic-square-gray", @(JSBubbleImageViewStyleClassicSquareGray),
-                                 @"bubble-classic-square-blue", @(JSBubbleImageViewStyleClassicSquareBlue),
+                                 @"ReceiverTextNodeBkg", @(JSBubbleImageViewStyleClassicSquareGray),
+                                 @"SenderTextNodeBkg", @(JSBubbleImageViewStyleClassicSquareBlue),
                                  nil];
     });
 }
@@ -88,16 +88,30 @@ static NSDictionary *bubbleImageDictionary;
     UIImage *image = [UIImage imageNamed:[bubbleImageDictionary objectForKey:@(style)]];
     UIImage *highlightedImage = [JSBubbleImageViewFactory classicHighlightedBubbleImageForStyle:style];
     
-    if (!isOutgoing) {
-        image = [image js_imageFlippedHorizontal];
-        highlightedImage = [highlightedImage js_imageFlippedHorizontal];
+    if (isOutgoing) {
+        return [[UIImageView alloc] initWithImage:[image resizableImageWithCapInsets:UIEdgeInsetsMake(17.0f, 10.0f, 13.0f, 12.0f)
+                                                                        resizingMode:UIImageResizingModeStretch]
+                                 highlightedImage:[highlightedImage resizableImageWithCapInsets:UIEdgeInsetsMake(17.0f, 10.0f, 13.0f, 12.0f)
+                                                                                   resizingMode:UIImageResizingModeStretch]];
+    }
+    else {
+        return [[UIImageView alloc] initWithImage:[image resizableImageWithCapInsets:UIEdgeInsetsMake(17.0f, 13.0f, 12.0f, 11.0f)
+                                                                        resizingMode:UIImageResizingModeStretch]
+                                 highlightedImage:[highlightedImage resizableImageWithCapInsets:UIEdgeInsetsMake(17.0f, 13.0f, 12.0f, 11.0f)
+                                                                                   resizingMode:UIImageResizingModeStretch]];
     }
     
-    UIEdgeInsets capInsets = [JSBubbleImageViewFactory classicBubbleImageCapInsetsForStyle:style
-                                                                                isOutgoing:isOutgoing];
+//    if (!isOutgoing) {
+//        image = image ;
+//        highlightedImage = highlightedImage ;
+//    }
     
-    return [[UIImageView alloc] initWithImage:[image js_stretchableImageWithCapInsets:capInsets]
-                             highlightedImage:[highlightedImage js_stretchableImageWithCapInsets:capInsets]];
+//    UIEdgeInsets capInsets = [JSBubbleImageViewFactory classicBubbleImageCapInsetsForStyle:style
+//                                                                                isOutgoing:isOutgoing];
+//    
+//    return [[UIImageView alloc] initWithImage:[image js_stretchableImageWithCapInsets:capInsets]
+//                             highlightedImage:[highlightedImage js_stretchableImageWithCapInsets:capInsets]];
+    
 }
 
 + (UIImage *)classicHighlightedBubbleImageForStyle:(JSBubbleImageViewStyle)style
@@ -109,8 +123,10 @@ static NSDictionary *bubbleImageDictionary;
             return [UIImage imageNamed:@"bubble-classic-selected"];
             
         case JSBubbleImageViewStyleClassicSquareGray:
+            return [UIImage imageNamed:@"ReceiverTextNodeBkgHL"];
+            
         case JSBubbleImageViewStyleClassicSquareBlue:
-            return [UIImage imageNamed:@"bubble-classic-square-selected"];
+            return [UIImage imageNamed:@"SenderTextNodeBkgHL"];
             
         default:
             return nil;

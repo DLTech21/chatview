@@ -192,18 +192,18 @@
     
     //  below iOS 7, if you set the text view frame programmatically, the KVO will continue notifying
     //  to avoid that, we are removing the observer before setting the frame and add the observer after setting frame here.
-    [self.textView removeObserver:_textView.keyboardDelegate
-                       forKeyPath:@"contentSize"];
+//    [self.textView removeObserver:_textView.keyboardDelegate
+//                       forKeyPath:@"contentSize"];
     
     self.textView.frame = CGRectMake(prevFrame.origin.x,
                                      prevFrame.origin.y,
                                      prevFrame.size.width,
                                      prevFrame.size.height + changeInHeight);
     
-    [self.textView addObserver:_textView.keyboardDelegate
-                    forKeyPath:@"contentSize"
-                       options:NSKeyValueObservingOptionNew
-                       context:nil];
+//    [self.textView addObserver:_textView.keyboardDelegate
+//                    forKeyPath:@"contentSize"
+//                       options:NSKeyValueObservingOptionNew
+//                       context:nil];
 
     self.textView.contentInset = UIEdgeInsetsMake((numLines >= 4 ? 4.0f : 0.0f),
                                                   0.0f,
@@ -216,7 +216,7 @@
     if (numLines >= 4) {
         CGPoint bottomOffset = CGPointMake(0.0f, self.textView.contentSize.height - self.textView.bounds.size.height);
         [self.textView setContentOffset:bottomOffset animated:YES];
-        [self.textView scrollRangeToVisible:NSMakeRange(self.textView.text.length - 2, 1)];
+//        [self.textView scrollRangeToVisible:NSMakeRange(self.textView.text.length - 2, 1)];
     }
 }
 

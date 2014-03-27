@@ -8,18 +8,21 @@
 
 #import "ChattingViewController.h"
 #import "JSMessage.h"
+#import "UIView+Utils.h"
 
 @interface ChattingViewController () <JSMessagesViewDataSource, JSMessagesViewDelegate>
-
+{
+    int tableviewDataState;
+}
 @property (strong, nonatomic) NSMutableArray *messages;
 @property (strong, nonatomic) NSDictionary *avatars;
 
 @end
 
 
-#define kSubtitleJobs @"Jobs"
-#define kSubtitleWoz @"Steve Wozniak"
-#define kSubtitleCook @"Mr. Cook"
+#define kSubtitleJobs @""
+#define kSubtitleWoz @""
+#define kSubtitleCook @""
 
 @implementation ChattingViewController
 
@@ -79,10 +82,14 @@
 }
 
 #pragma mark - Table view data source
-
 - (NSInteger)tableView:(UITableView *)tableView numberOfRowsInSection:(NSInteger)section
 {
-    return self.messages.count;
+    if (section == 0) {
+        return 0;
+    }
+    else {
+        return self.messages.count;
+    }
 }
 
 #pragma mark - Messages view delegate: REQUIRED
@@ -113,12 +120,12 @@
                        forRowAtIndexPath:(NSIndexPath *)indexPath
 {
     if (indexPath.row % 2) {
-        return [JSBubbleImageViewFactory bubbleImageViewForType:type
-                                                          color:[UIColor js_bubbleLightGrayColor]];
+        return [JSBubbleImageViewFactory classicBubbleImageViewForType:JSBubbleMessageTypeIncoming
+                                                                 style:JSBubbleImageViewStyleClassicSquareGray];
     }
     
-    return [JSBubbleImageViewFactory bubbleImageViewForType:type
-                                                      color:[UIColor js_bubbleBlueColor]];
+    return [JSBubbleImageViewFactory classicBubbleImageViewForType:JSBubbleMessageTypeOutgoing
+                                                             style:JSBubbleImageViewStyleClassicSquareBlue];
 }
 
 - (JSMessageInputViewStyle)inputViewStyle
@@ -142,7 +149,6 @@
 - (void)configureCell:(JSBubbleMessageCell *)cell atIndexPath:(NSIndexPath *)indexPath
 {
     if ([cell messageType] == JSBubbleMessageTypeOutgoing) {
-        cell.bubbleView.textView.textColor = [UIColor whiteColor];
         
         if ([cell.bubbleView.textView respondsToSelector:@selector(linkTextAttributes)]) {
             NSMutableDictionary *attrs = [cell.bubbleView.textView.linkTextAttributes mutableCopy];
@@ -196,12 +202,26 @@
     return [self.messages objectAtIndex:indexPath.row];
 }
 
-- (UIImageView *)avatarImageViewForRowAtIndexPath:(NSIndexPath *)indexPath sender:(NSString *)sender
+- (void)moreCell:(MoreCell *)cell
 {
-    UIImage *image = [self.avatars objectForKey:sender];
-    return [[UIImageView alloc] initWithImage:image];
+    cell.loadingIndicator.left = (cell.contentView.width-cell.loadingIndicator.width)/2;
+    [cell.loadingIndicator setHidden:YES];
+    [cell.loadingIndicator stopAnimating];
 }
 
+-(BOOL)displaySendingIndicatorForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    if (indexPath.row % 2) {
+        return NO;
+    }
+    else {
+        return YES;
+    }
+}
 
+-(void)avatarImageForMessage:(UIImageView *)imageView avatarUrlForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    [imageView setImage:[UIImage imageNamed:@"avatar-placeholder"]];
+}
 
 @end

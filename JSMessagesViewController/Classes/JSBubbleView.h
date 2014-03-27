@@ -93,7 +93,14 @@ typedef enum {
 - (CGRect)bubbleFrame;
 
 #pragma mark - Class methods
-
+/**
+ *  Computes and returns the minimum necessary height of a `JSBubbleView` needed to display the given text.
+ *
+ *  @param text The text to display in the bubble view.
+ *
+ *  @return The height required for the frame of the bubble view in order to display the given text.
+ */
++ (CGSize)neededSizeForText:(NSString *)text;
 /**
  *  Computes and returns the minimum necessary height of a `JSBubbleView` needed to display the given text.
  *

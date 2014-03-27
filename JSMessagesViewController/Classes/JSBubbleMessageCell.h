@@ -38,7 +38,7 @@
  *  Returns the image view used to display the avatar for the cell. This property may be `nil` if no avatar is provided. 
  *  @see JSMessagesViewDataSource.
  */
-@property (weak, nonatomic, readonly) UIImageView *avatarImageView;
+@property (strong, nonatomic) UIImageView *avatarImageView;
 
 /**
  *  Returns the label used to display the subtitle for the cell. This property may be `nil` if no subtitle is provided. 
@@ -46,6 +46,7 @@
  */
 @property (weak, nonatomic, readonly) UILabel *subtitleLabel;
 
+@property (strong, nonatomic) UIActivityIndicatorView *sendingIndicator;
 #pragma mark - Initialization
 
 /**

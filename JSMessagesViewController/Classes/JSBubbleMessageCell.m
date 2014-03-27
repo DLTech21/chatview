@@ -146,13 +146,21 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
 	}
     
     if (hasAvatar) {
-        offsetX = 4.0f;
-        bubbleX = kJSAvatarImageSize;
-        if (type == JSBubbleMessageTypeOutgoing) {
-            offsetX = kJSAvatarImageSize - 4.0f;
+        offsetX = 2.0f;
+        CGFloat avatarX = 8.0f;
+        bubbleX = kJSAvatarImageSize + avatarX+2+10;
+        if(type == JSBubbleMessageTypeOutgoing) {
+            avatarX = (self.contentView.frame.size.width - kJSAvatarImageSize - avatarX);
+            offsetX = kJSAvatarImageSize - 2.0f + 8.0f+10;
+            
         }
-        
-        [self configureAvatarImageView:[[UIImageView alloc] init] forMessageType:type];
+        self.avatarImageView = [[UIImageView alloc] initWithFrame:CGRectMake(avatarX,
+                                                                             bubbleY+10,
+                                                                             kJSAvatarImageSize,
+                                                                             kJSAvatarImageSize)];
+        [self.avatarImageView setClipsToBounds:YES];
+        [self.avatarImageView setContentMode:UIViewContentModeScaleAspectFill];
+        [self.contentView addSubview:self.avatarImageView];
     }
     
     CGRect frame = CGRectMake(bubbleX - offsetX,
@@ -171,6 +179,9 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
     [self.contentView addSubview:bubbleView];
     [self.contentView sendSubviewToBack:bubbleView];
     _bubbleView = bubbleView;
+    
+    self.sendingIndicator = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleGray];
+    [self.contentView addSubview:self.sendingIndicator];
 }
 
 #pragma mark - Initialization
@@ -255,13 +266,13 @@ static const CGFloat kJSSubtitleLabelHeight = 15.0f;
     [self setSubtitle:[message sender]];
 }
 
-- (void)setAvatarImageView:(UIImageView *)imageView
-{
-    [_avatarImageView removeFromSuperview];
-    _avatarImageView = nil;
-    
-    [self configureAvatarImageView:imageView forMessageType:[self messageType]];
-}
+//- (void)setAvatarImageView:(UIImageView *)imageView
+//{
+//    [_avatarImageView removeFromSuperview];
+//    _avatarImageView = nil;
+//    
+//    [self configureAvatarImageView:imageView forMessageType:[self messageType]];
+//}
 
 #pragma mark - Getters
 

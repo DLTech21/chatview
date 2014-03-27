@@ -20,9 +20,9 @@
 
 #define kMarginTop 8.0f
 #define kMarginBottom 4.0f
-#define kPaddingTop 4.0f
+#define kPaddingTop 8.0f
 #define kPaddingBottom 8.0f
-#define kBubblePaddingRight 35.0f
+#define kBubblePaddingRight 30.0f
 
 
 @interface JSBubbleView()
@@ -194,9 +194,9 @@
     
     CGFloat textX = self.bubbleImageView.frame.origin.x;
     
-    if (self.type == JSBubbleMessageTypeIncoming) {
+//    if (self.type == JSBubbleMessageTypeIncoming) {
         textX += (self.bubbleImageView.image.capInsets.left / 2.0f);
-    }
+//    }
     
     CGRect textFrame = CGRectMake(textX,
                                   self.bubbleImageView.frame.origin.y,
@@ -210,7 +210,7 @@
 
 + (CGSize)textSizeForText:(NSString *)txt
 {
-    CGFloat maxWidth = [UIScreen mainScreen].applicationFrame.size.width * 0.70f;
+    CGFloat maxWidth = [UIScreen mainScreen].applicationFrame.size.width * 0.50f;
     CGFloat maxHeight = MAX([JSMessageTextView numberOfLinesForMessage:txt],
                          [txt js_numberOfLines]) * [JSMessageInputView textViewLineHeight];
     maxHeight += kJSAvatarImageSize;
@@ -236,8 +236,9 @@
 + (CGSize)neededSizeForText:(NSString *)text
 {
     CGSize textSize = [JSBubbleView textSizeForText:text];
-    
-	return CGSizeMake(textSize.width + kBubblePaddingRight,
+    float minWidth = textSize.width + kBubblePaddingRight;
+    minWidth = minWidth < 50?50: minWidth;
+	return CGSizeMake(minWidth,
                       textSize.height + kPaddingTop + kPaddingBottom);
 }
 
